@@ -9,9 +9,25 @@
     };
    exports.commonTest = function () { return 42; }
 
+   exports.sounds = {
+     "doorhit": new Audio("/sounds/Boing.ogg"),
+     "dooropen": new Audio("/sounds/door_open.ogg"),
+     "wallhit": new Audio("/sounds/Boing.ogg")
+   };
    exports.drawGame = function (board, svg) {
         var scale = 30;
         var leng = 2.2;
+        for (a in board.animations) {
+          console.log("Making noise for ", board.animations[a]);
+          if (board.animations[a].slice(0,10) == "bouncehard") {
+            exports.sounds.doorhit.play();
+          } else if (board.animations[a].slice(0,6) == "bounce") {
+            exports.sounds.wallhit.play();
+          } else if (board.animations[a].slice(0,9) == "doornoise") {
+            exports.sounds.dooropen.play();
+          }
+        }
+        board.animations = [];
         svg.setAttribute('width', board["size_x"]*scale);
         svg.setAttribute('height', board["size_y"]*scale);
         svg.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
@@ -134,13 +150,6 @@
                 }
           }
         }
-        var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        shape.setAttribute('x',  40);
-        shape.setAttribute('y',  40);
-        shape.setAttribute('height',  10);
-        shape.setAttribute('width',  10);
-        shape.setAttribute("xlink:href", "/images/goal.png")
-        svg.appendChild(shape);
       }
 
 

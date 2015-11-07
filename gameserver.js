@@ -11,7 +11,6 @@
 var http = require('http')
 , url = require('url')
 , fs = require('fs')
-, gamecommon = require(__dirname+ '/public/gamecommon')
 , os = require("os")
 , express = require("express")
 , Thingspeak = require('thingspeakclient')
@@ -136,11 +135,11 @@ send404 = function(res, msg) {
 var io = require('socket.io').listen(socketlistener);
 io.set('log level', 1);
 
-
+/*
 if (42 != gamecommon.commonTest()) {
     console.log( "ERROR -- Common library not found");
     console.log(  gamecommon.commonTest());
-}
+}*/
 
 // on a 'connection' event
 
@@ -587,7 +586,9 @@ function emptyBoard(width, height) {
              "size_x": width,
              "size_y": height,
              "turn" : 'U1',
-             "cells": cells };
+             "cells": cells,
+             "animations": {'U1':[], 'U2':[]} };
+
 }
 
 function randBoard() {
@@ -632,21 +633,21 @@ function randBoard() {
             if (iscorridor(board,[x,y])) {
                 if (rollU1 < .2) {
                     insert(board, [x,y], "U1", "barrier");
-                    console.log("corridor U1")
+                    debug(3, "corridor U1")
                 }
                 if (rollU2 < .2) {
                     insert(board, [x,y], "U2", "barrier");
-                    console.log("corridor U2")
+                    debug(3, "corridor U2")
                 }
             }
             if (isroom(board, [x,y])) {
                 if (rollU1 < .3) {
                     insert(board, [x,y], "U1", "switch");
-                    console.log("switch U1")
+                    debug(3, "switch U1")
                 }
                 if (rollU2 < .3) {
                     insert(board, [x,y], "U2", "switch");
-                    console.log("switch U21")
+                    debug(3, "switch U21")
                 }
             }
         }
@@ -712,7 +713,8 @@ function genBoard(mapA, mapB) {
              "size_x": maxx,
              "size_y": maxy,
              "turn" : 'U1',
-             "cells": cells };
+             "cells": cells,
+             "animations": {'U1':[], 'U2':[]} };
 }
 
 Array.prototype.remove_item = function (item) {
@@ -724,6 +726,7 @@ Array.prototype.remove_item = function (item) {
 
 
 function movePlayer(direction, board, player, turnsMatter) {
+    board.animations = {'U1':[], 'U2':[]};
     if (board.turn != player && turnsMatter) {
         console.log("Not your turn, " + player + "!");
         return;
@@ -745,15 +748,18 @@ function movePlayer(direction, board, player, turnsMatter) {
         var hallway = iscorridor(board, passageCoords);
         var barrier = checkif(board, passageCoords, player, "barrier");
         if (hallway && !barrier) {
+            board.animations[player].push("move_" + direction);
             board.turn = other;
             board.moves++;
         } else if (hallway && barrier) {
             board.turn = other;
+            board.animations[player].push("bouncehard_" + direction);
             board.moves++;
             board.penalty+=2;
             newloc[0] = -1;
         } else if (!hallway) {
             newloc[0] = -1;
+            board.animations[player].push("bounce_" + direction);
             console.log("Blocked passage");
         }
     }
@@ -766,6 +772,7 @@ function movePlayer(direction, board, player, turnsMatter) {
         console.log("Checking switch for " + other + " instead of " + player + ": " + checkif(board, newloc, other, "switch"))
         if (checkif(board, newloc, other, "switch")) {
             console.log("...yep!  Flipping barriers")
+            board.animations[other].push("doornoise");
             flipBarriers(board, other)
         }
         board.turn = other;
@@ -963,7 +970,7 @@ function hideOther(board, me) {
             }
         }
     }
-
+    boardA.animations = boardA.animations[me];
     return boardA;
 }
 

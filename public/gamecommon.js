@@ -14,6 +14,7 @@
         var leng = 2.2;
         svg.setAttribute('width', board["size_x"]*scale);
         svg.setAttribute('height', board["size_y"]*scale);
+        svg.setAttribute('xmlns:xlink', "http://www.w3.org/1999/xlink");
         for (x1=0; x1<board["size_x"]*2; x1+= 2) {
             for (y1=0; y1<board["size_y"]*2; y1+= 2) {
                 var x = x1<=board["size_x"]?x1:x1-board["size_x"]
@@ -84,11 +85,12 @@
                      }
                 }
                 if (contents.indexOf("goal") > -1) {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    shape.setAttribute('cx',  x*scale + scale/2);
-                    shape.setAttribute('cy',  y*scale+scale/2);
-                    shape.setAttribute('r',  scale/2);
-                    shape.setAttribute('fill',  "blue");
+                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
+                    shape.setAttribute('x',  x*scale );
+                    shape.setAttribute('y',  y*scale);
+                    shape.setAttribute('height',  scale);
+                    shape.setAttribute('width',  scale);
+                    shape.setAttributeNS('http://www.w3.org/1999/xlink', "xlink:href", "/images/goal.png")
                     svg.appendChild(shape);
 
                 }
@@ -98,15 +100,16 @@
                     shape.setAttribute('y',  y*scale + scale/2+ scale/6);
                     shape.setAttribute('width',  scale/3);
                     shape.setAttribute('height',  scale/3);
-                    shape.setAttribute('fill',  "orange");
+                    shape.setAttributeNS('http://www.w3.org/1999/xlink', "xlink:href", "/images/toggle.png")
                     svg.appendChild(shape);
                 }
                 if (contents.indexOf("me") > -1) {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    shape.setAttribute('cx',  x*scale + scale/2);
-                    shape.setAttribute('cy',  y*scale+ scale/2);
-                    shape.setAttribute('r',  scale/2.5);
-                    shape.setAttribute('fill',  "yellow");
+                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
+                    shape.setAttribute('x',  x*scale );
+                    shape.setAttribute('y',  y*scale);
+                    shape.setAttribute('height',  scale);
+                    shape.setAttribute('width',  scale);
+                    shape.setAttributeNS('http://www.w3.org/1999/xlink', "xlink:href", "/images/meeple.png")
                     if (board.myturn) {
                         var blinkon = document.createElementNS("http://www.w3.org/2000/svg", "set");
                         blinkon.setAttribute('id', 'show');
@@ -131,6 +134,13 @@
                 }
           }
         }
+        var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        shape.setAttribute('x',  40);
+        shape.setAttribute('y',  40);
+        shape.setAttribute('height',  10);
+        shape.setAttribute('width',  10);
+        shape.setAttribute("xlink:href", "/images/goal.png")
+        svg.appendChild(shape);
       }
 
 
@@ -141,4 +151,3 @@
 
 
 })(typeof exports === 'undefined'? this['gamecommon']={}: exports);
-

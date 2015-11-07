@@ -38,7 +38,7 @@
         socket.on('disconnect', function(){ status_update('Disconnected from Server'); });
         socket.on('reconnecting', function( nextRetry ){ status_update('Reconnecting in ' + nextRetry + ' milliseconds'); });
         socket.on('reconnect_failed', function(){ status_update('Reconnect Failed'); });
-        socket.on('update', function(msg) { redisplayBasedOn(msg); status_update(msg); });
+        socket.on('update', function(msg) { redisplayBasedOn(msg); status_update(msg.game); });
         socket.on('gameupdate', function(msg) { redisplayBasedOn(msg); game_update(msg); });
         socket.on('chat', function(msg) { chatlog(msg.from, msg.text); });
       }
@@ -86,11 +86,7 @@
       }
 
       function status_update(status) {
-        if (status.indexOf("game") > -1) {
-            $('#status').html(status.game);
-        } else {
-            $('#status').html(status);
-        }
+        $('#status').html(status);
       }
 
       function game_update(status) {
@@ -131,11 +127,13 @@
     </script>
 
     <h1>Maze game</h1>
-    Try to get to the blue treasure room.
-    You have an invisible partner in this maze.  When they step on an orange switch,
+    Try to get to the yellow star treasure room.
+    You have an invisible partner in this maze.  You can talk to them by typing in <thead>
+      chat window to the right.
+    When they step on a switch (<img src="/images/toggle.png">),
     the grey barriers will move to open up different pathways.
     <br/>
-    Your partner cannot see the switches and barriers, and can pass through them freely.
+    Your partner cannot see <em>your</em> switches and barriers, and can pass through them freely.
     Unfortunately, they have their own switches and barriers, and a treasure room
     in a different place, that <em>you</em> cannot see.
     So you'll have to cooperate to get both of you to your respective treasure rooms!

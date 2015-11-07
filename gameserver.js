@@ -11,36 +11,37 @@
 var http = require('http')
 , url = require('url')
 , fs = require('fs')
-, gamecommon = require(__dirname+ '/gamecommon')
+, gamecommon = require(__dirname+ '/public/gamecommon')
 , os = require("os")
+, express = require("express")
 , Thingspeak = require('thingspeakclient')
 , server;
 
 function myIPv6() {
-   
+
    var netint = os.networkInterfaces();
 	/* Example output of os.networkInterfaces:
-         * { lo0: 
+         * { lo0:
    	 *    [ { address: '::1', family: 'IPv6', internal: true },
      	 *      { address: '127.0.0.1', family: 'IPv4', internal: true },
      	 *      { address: 'fe80::1', family: 'IPv6', internal: true } ],
-  	 *   en0: 
+  	 *   en0:
    	 *    [ { address: 'fe80::cae0:ebff:fe19:1951',
        	 *        family: 'IPv6',
        	 *        internal: false },
      	 *      { address: '128.237.205.66', family: 'IPv4', internal: false } ],
-  	 *   awdl0: 
+  	 *   awdl0:
    	 *    [ { address: 'fe80::b884:77ff:fe35:faaf',
        	 *        family: 'IPv6',
        	 *        internal: false } ],
-  	 *   utun0: 
+  	 *   utun0:
    	 *    [ { address: 'fe80::d116:4a3d:6c9d:c79d',
        	 *        family: 'IPv6',
        	 *        internal: false },
      	 *      { address: 'fdf8:f927:20f6:991:d116:4a3d:6c9d:c79d',
        	 *        family: 'IPv6',
        	 *        internal: false } ],
-  	 *   vboxnet1: 
+  	 *   vboxnet1:
          *    [ { address: '192.168.99.1', family: 'IPv4', internal: false } ] }
          */
 
@@ -60,7 +61,25 @@ var thing = new Thingspeak();
 thing.attachChannel(15021, { writeKey:'YE9XA4NZGQUV1H2R' });
 thing.updateChannel(15021, { field1:myIPv6(), field2:1 });
 
+//TEMPORARY DEBUGGING MEASURE:
+var logger = function(req, res, next) {
+    debug(1,"REQUEST:", req.url);
+    next(); // Passing the request to the next handler in the stack.
+}
 
+
+//END TEMPO
+
+
+var server = express();
+server.get('/', function(req, res){
+  res.sendFile(__dirname + '/public/gameclient.html');
+});
+server.use(logger);
+server.use(express.static(__dirname + "/public"));
+socketlistener = server.listen(8080);
+
+/*
 server = http.createServer(function(req,res) {
     // server code
     var path = url.parse(req.url).pathname;
@@ -73,17 +92,23 @@ server = http.createServer(function(req,res) {
                 res.end();
             });
             break;
-        case '/gamecommon.js':
-            fs.readFile(__dirname+"/gamecommon.js", function(err,data) {
+        default:
+            fs.readFile(__dirname+path, function(err,data) {
                 if (err) return send404(res, err);
-                res.writeHead(200, {'Content-Type': 'application/javascript'});
-                res.write(data, 'utf8');
+                if (path.slice(-3) == ".js") {
+                   res.writeHead(200, {'Content-Type': 'application/javascript'});
+                   res.write(data, 'utf8');
+                } else if (path.slice(-4) == ".png") {
+                   res.writeHead(200, {'Content-Type': 'image/png'});
+                   res.write(data, 'binary');
+                }
                 res.end();
             });
             break;
-        default: send404(res, JSON.stringify(path));
+        //default: send404(res, JSON.stringify(path));
     }
 })
+*/
 
 Logger = function(fname) {
     this.theFile = fs.createWriteStream(fname, { flags: 'a' });
@@ -105,11 +130,10 @@ send404 = function(res, msg) {
     res.end();
     };
 
-server.listen(8080);
 
 // socket.io, I choose you
 //var io = require('/usr/local/lib/node_modules/socket.io').listen(server);
-var io = require('socket.io').listen(server);
+var io = require('socket.io').listen(socketlistener);
 io.set('log level', 1);
 
 
@@ -327,7 +351,7 @@ mapIIaA =
      '0-4-0-0',
      '+ + + +',
      '4-0-0-2']
-mapIIaB = 
+mapIIaB =
     ['4-0-0-1',
      '+ + + +',
      '0-4-0-0',
@@ -336,7 +360,7 @@ mapIIaB =
      '+ + + +',
      '2-0-0-4']
 
-mapIIbA = 
+mapIIbA =
     ['0+0+4-4+0+0',
      '|   + +   |',
      '4-0+5 4+0-4',
@@ -386,7 +410,7 @@ mapIIcB =
      '  | | | |  ',
      '0-0-4+4-0-0']
 
-mapIIdA = 
+mapIIdA =
     ['0+4-1+8-4+0',
      '| + | | + |',
      '4+0-4 4-0+4',
@@ -398,7 +422,7 @@ mapIIdA =
      '0 6+0-0+4 0',
      '| | | | | |',
      '0-0-4 4-0-0']
-mapIIdB = 
+mapIIdB =
     ['0+0-4+d-0+0',
      '| | + + | |',
      '4-4+0 0+4-4',
@@ -432,10 +456,10 @@ mapIIeB =
      '  + +   +  ',
      '  0+4-4 4-0',
      '  |   + |  ',
-     '0-4+1-0+0  ',     
+     '0-4+1-0+0  ',
      '    +      ',
      '    4-0-0  ']
-     
+
 mapIIfA =
     ['0-4 1-0 4-0',
      '+ | | | | +',
@@ -448,7 +472,7 @@ mapIIfA =
      '4+2-4 4-0+4',
      '| + | | + |',
      '0 0-0+0-0 0']
-mapIIfB = 
+mapIIfB =
     ['0-0 4+5 0-0',
      '+ | + + | +',
      '0+4-0 0-4+0',
@@ -459,7 +483,7 @@ mapIIfB =
      '| | + + | |',
      '0+4+0 0+6+0',
      '| | | | | |',
-     '0 0-4+4-0 0']     
+     '0 0-4+4-0 0']
 
 
 
@@ -604,7 +628,7 @@ function randBoard() {
         for(var y=0; y<room_height*2-1; y++) {
             rollU1 = Math.random();
             rollU2 = Math.random();
-            console.log("Adding stuff at %s probabilities %s, %s", [x,y], rollU1, rollU2);
+            debug(3, "Adding stuff at %s probabilities %s, %s", [x,y], rollU1, rollU2);
             if (iscorridor(board,[x,y])) {
                 if (rollU1 < .5) {
                     insert(board, [x,y], "U1", "barrier");
@@ -720,7 +744,7 @@ function movePlayer(direction, board, player, turnsMatter) {
         console.log("Passage coordinates are " + passageCoords)
         var hallway = iscorridor(board, passageCoords);
         var barrier = checkif(board, passageCoords, player, "barrier");
-        if (hallway && !barrier) { 
+        if (hallway && !barrier) {
             board.turn = other;
             board.moves++;
         } else if (hallway && barrier) {

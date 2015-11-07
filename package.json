@@ -1,0 +1,25 @@
+{
+  "name": "mazegame",
+  "version": "0.0.1",
+  "description": "Garrod and Anderson's Maze Game",
+  "main": "gameserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbogart/mazegame.git"
+  },
+  "author": "Chris Bogart",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cbogart/mazegame/issues"
+  },
+  "homepage": "https://github.com/cbogart/mazegame#readme",
+  "dependencies": {
+    "express": "^4.13.3",
+    "jsdom": "^7.0.2",
+    "socket.io": "^1.3.7",
+    "thingspeakclient": "^0.4.0"
+  }
+}

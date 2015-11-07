@@ -14,8 +14,7 @@ COPY . /usr/src/app
 USER root
 RUN chmod 777 mazeGames.log
 USER node
-RUN npm install jsdom thingspeakclient
-RUN npm install socket.io
+RUN npm install
 ENV PORT 8080  
 EXPOSE 8080
 

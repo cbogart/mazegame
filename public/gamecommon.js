@@ -95,7 +95,7 @@
 
                 }
                 if (contents.indexOf("switch") > -1) {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
                     shape.setAttribute('x',  x*scale + scale/2+ scale/6);
                     shape.setAttribute('y',  y*scale + scale/2+ scale/6);
                     shape.setAttribute('width',  scale/3);

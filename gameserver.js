@@ -630,11 +630,11 @@ function randBoard() {
             rollU2 = Math.random();
             debug(3, "Adding stuff at %s probabilities %s, %s", [x,y], rollU1, rollU2);
             if (iscorridor(board,[x,y])) {
-                if (rollU1 < .5) {
+                if (rollU1 < .2) {
                     insert(board, [x,y], "U1", "barrier");
                     console.log("corridor U1")
                 }
-                if (rollU2 < .5) {
+                if (rollU2 < .2) {
                     insert(board, [x,y], "U2", "barrier");
                     console.log("corridor U2")
                 }

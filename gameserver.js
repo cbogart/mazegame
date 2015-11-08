@@ -8,62 +8,67 @@
 // Thingspeak key: YE9XA4NZGQUV1H2R
 
 
-var http = require('http')
-, url = require('url')
-, fs = require('fs')
-, os = require("os")
-, express = require("express")
-, Thingspeak = require('thingspeakclient')
-, server;
+var http = require('http'),
+  url = require('url'),
+  fs = require('fs'),
+  os = require("os"),
+  express = require("express"),
+  Thingspeak = require('thingspeakclient'),
+  server;
 
 function myIPv6() {
 
-   var netint = os.networkInterfaces();
-	/* Example output of os.networkInterfaces:
-         * { lo0:
-   	 *    [ { address: '::1', family: 'IPv6', internal: true },
-     	 *      { address: '127.0.0.1', family: 'IPv4', internal: true },
-     	 *      { address: 'fe80::1', family: 'IPv6', internal: true } ],
-  	 *   en0:
-   	 *    [ { address: 'fe80::cae0:ebff:fe19:1951',
-       	 *        family: 'IPv6',
-       	 *        internal: false },
-     	 *      { address: '128.237.205.66', family: 'IPv4', internal: false } ],
-  	 *   awdl0:
-   	 *    [ { address: 'fe80::b884:77ff:fe35:faaf',
-       	 *        family: 'IPv6',
-       	 *        internal: false } ],
-  	 *   utun0:
-   	 *    [ { address: 'fe80::d116:4a3d:6c9d:c79d',
-       	 *        family: 'IPv6',
-       	 *        internal: false },
-     	 *      { address: 'fdf8:f927:20f6:991:d116:4a3d:6c9d:c79d',
-       	 *        family: 'IPv6',
-       	 *        internal: false } ],
-  	 *   vboxnet1:
-         *    [ { address: '192.168.99.1', family: 'IPv4', internal: false } ] }
-         */
+  var netint = os.networkInterfaces();
+  /* Example output of os.networkInterfaces:
+   * { lo0:
+   *    [ { address: '::1', family: 'IPv6', internal: true },
+   *      { address: '127.0.0.1', family: 'IPv4', internal: true },
+   *      { address: 'fe80::1', family: 'IPv6', internal: true } ],
+   *   en0:
+   *    [ { address: 'fe80::cae0:ebff:fe19:1951',
+   *        family: 'IPv6',
+   *        internal: false },
+   *      { address: '128.237.205.66', family: 'IPv4', internal: false } ],
+   *   awdl0:
+   *    [ { address: 'fe80::b884:77ff:fe35:faaf',
+   *        family: 'IPv6',
+   *        internal: false } ],
+   *   utun0:
+   *    [ { address: 'fe80::d116:4a3d:6c9d:c79d',
+   *        family: 'IPv6',
+   *        internal: false },
+   *      { address: 'fdf8:f927:20f6:991:d116:4a3d:6c9d:c79d',
+   *        family: 'IPv6',
+   *        internal: false } ],
+   *   vboxnet1:
+   *    [ { address: '192.168.99.1', family: 'IPv4', internal: false } ] }
+   */
 
-   console.log(os.networkInterfaces());
-   for(var intf in netint) {
-        var results = netint[intf].filter(function(details) {
-		return details.family === 'IPv6' && details.internal === false;
-	});
-	if (results.length > 0) {
-		return results[0].address;
-	}
-   }
-   return "unknown";;
+  //console.log(os.networkInterfaces());
+  for (var intf in netint) {
+    var results = netint[intf].filter(function(details) {
+      return details.family === 'IPv6' && details.internal === false;
+    });
+    if (results.length > 0) {
+      return results[0].address;
+    }
+  }
+  return "unknown";;
 }
 
 var thing = new Thingspeak();
-thing.attachChannel(15021, { writeKey:'YE9XA4NZGQUV1H2R' });
-thing.updateChannel(15021, { field1:myIPv6(), field2:1 });
+thing.attachChannel(15021, {
+  writeKey: 'YE9XA4NZGQUV1H2R'
+});
+thing.updateChannel(15021, {
+  field1: myIPv6(),
+  field2: 1
+});
 
 //TEMPORARY DEBUGGING MEASURE:
 var logger = function(req, res, next) {
-    debug(1,"REQUEST:", req.url);
-    next(); // Passing the request to the next handler in the stack.
+  debug(1, "REQUEST:", req.url);
+  next(); // Passing the request to the next handler in the stack.
 }
 
 
@@ -71,8 +76,11 @@ var logger = function(req, res, next) {
 
 
 var server = express();
-server.get('/', function(req, res){
+server.get('/', function(req, res) {
   res.sendFile(__dirname + '/public/gameclient.html');
+});
+server.get('/log', function(req, res) {
+  res.sendFile(__dirname + '/mazeGames.log');
 });
 server.use(logger);
 server.use(express.static(__dirname + "/public"));
@@ -110,24 +118,29 @@ server = http.createServer(function(req,res) {
 */
 
 Logger = function(fname) {
-    this.theFile = fs.createWriteStream(fname, { flags: 'a' });
+  this.theFile = fs.createWriteStream(fname, {
+    flags: 'a'
+  });
 };
 Logger.prototype.log = function(text) {
-    this.theFile.write(JSON.stringify({when: new Date().toISOString(), message: text}) + "\n");
+  this.theFile.write(JSON.stringify({
+    when: new Date().toISOString(),
+    message: text
+  }) + "\n");
 }
 Logger.prototype.close = function() {
-    this.theFile.end();
+  this.theFile.end();
 }
 
 logger = new Logger("mazeGames.log");
 
 send404 = function(res, msg) {
-    res.writeHead(404);
-    res.write('404');
-    res.write(" ");
-    res.write(msg);
-    res.end();
-    };
+  res.writeHead(404);
+  res.write('404');
+  res.write(" ");
+  res.write(msg);
+  res.end();
+};
 
 
 // socket.io, I choose you
@@ -160,165 +173,187 @@ io.sockets.on('connection', function(socket) {
   socket.on('disconnect', function() {
     console.log("Connection " + socket.id + " terminated.");
     if (socket.id in users) {
-        user.quit();
-        delete users[socket.id];
+      user.quit();
+      delete users[socket.id];
     }
   });
 
 });
 
 function Game(uid1, uid2) {
-    console.log("Starting a game with " + uid1 + " and " + uid2);
-    this.uid1 = uid1;
-    this.uid2 = uid2;
-    users[uid1].state = "playing";
-    users[uid2].state = "playing";
-    games[uid1] = this;
-    games[uid2] = this;
-    this.board = randBoard(); //genBoard(mapA, mapB);
-    this.inform();
+  console.log("Starting a game with " + uid1 + " and " + uid2);
+  this.uid1 = uid1;
+  this.uid2 = uid2;
+  users[uid1].state = "playing";
+  users[uid2].state = "playing";
+  games[uid1] = this;
+  games[uid2] = this;
+  this.board = randBoard(); //genBoard(mapA, mapB);
+  this.inform();
 }
 
-Game.prototype.inform = function () {
-    users[this.uid1].updateClient();
-    users[this.uid2].updateClient();
+Game.prototype.inform = function() {
+  users[this.uid1].updateClient();
+  users[this.uid2].updateClient();
 };
 
-Game.prototype.describe = function () {
-    if (this.board.turn == 'U1') { var turn1= " (turn) "; var turn2= ""; }
-    if (this.board.turn == 'U2') { var turn2= " (turn) "; var turn1= ""; }
-    return users[this.uid1].name + turn1 + " and " + users[this.uid2].name + turn2 + " have score " + this.board.score + " with penalty " + this.board.penalty + (this.board.won?" and won!":"");
+Game.prototype.describe = function() {
+  if (this.board.turn == 'U1') {
+    var turn1 = " (turn) ";
+    var turn2 = "";
+  }
+  if (this.board.turn == 'U2') {
+    var turn2 = " (turn) ";
+    var turn1 = "";
+  }
+  return users[this.uid1].name + turn1 + " and " + users[this.uid2].name + turn2 + " have score " + this.board.score + " with penalty " + this.board.penalty + (this.board.won ? " and won!" : "");
 };
 
 Game.prototype.boardOf = function(uid) {
-    return hideOther(this.board, this.UN(uid))
+  return hideOther(this.board, this.UN(uid))
 }
 
-Game.prototype.UN = function (uid) {
-    if (uid == this.uid1) {
-        return 'U1';
-    } else {
-        return 'U2';
-    }
+Game.prototype.UN = function(uid) {
+  if (uid == this.uid1) {
+    return 'U1';
+  } else {
+    return 'U2';
+  }
 }
 
-Game.prototype.otherUser = function (user) {
-    if (user.id == this.uid1) { return users[this.uid2]; }
-    else { return users[this.uid1]; }
+Game.prototype.otherUser = function(user) {
+  if (user.id == this.uid1) {
+    return users[this.uid2];
+  } else {
+    return users[this.uid1];
+  }
 }
 
 Game.prototype.move = function(move, uid) {
-    movePlayer(move, this.board, this.UN(uid), true);
+  movePlayer(move, this.board, this.UN(uid), true);
 }
 
-Game.prototype.quit = function () {
-    this.inform();
-    delete games[this.uid1];
-    delete games[this.uid2];
-    users[this.uid1].state = "intro";
-    users[this.uid2].state = "intro";
-    // update scoreboard
+Game.prototype.quit = function() {
+  this.inform();
+  delete games[this.uid1];
+  delete games[this.uid2];
+  users[this.uid1].state = "intro";
+  users[this.uid2].state = "intro";
+  // update scoreboard
 };
 
 function User(id) {
-    this.id = id
-    this.name = ""
-    this.partner = ""
-    this.state = "welcome"
-    users[id] = this
+  this.id = id
+  this.name = ""
+  this.partner = ""
+  this.state = "welcome"
+  users[id] = this
 }
 
-User.prototype.game = function  () {
-    if (this.state === "playing" && this.id in games) {
-        return games[this.id];
-    } else {
-        return undefined;
-    }
+User.prototype.game = function() {
+  if (this.state === "playing" && this.id in games) {
+    return games[this.id];
+  } else {
+    return undefined;
+  }
 }
 
 User.prototype.updateClient = function() {
-    var game = this.game();
-    this.socket.emit("update",{"state": this.state, "name": this.name, "game": (game == undefined?"none":this.game().describe()), "peeps": peeps()});
-    if (game != undefined && this.state == "playing") {
-        this.socket.emit("gameupdate", game.boardOf(this.id));
-    }
+  var game = this.game();
+  this.socket.emit("update", {
+    "state": this.state,
+    "name": this.name,
+    "game": (game == undefined ? "none" : this.game().describe()),
+    "peeps": peeps()
+  });
+  if (game != undefined && this.state == "playing") {
+    this.socket.emit("gameupdate", game.boardOf(this.id));
+  }
 }
 
 User.prototype.sendChat = function(from, txt) {
-    console.log("Sending '" + txt + "' from " + from + " to " + this.name);
-    this.socket.emit("chat", {"from" : from.name, "text" : txt});
+  console.log("Sending '" + txt + "' from " + from + " to " + this.name);
+  this.socket.emit("chat", {
+    "from": from.name,
+    "text": txt
+  });
 }
 
 User.prototype.handle = function(msg) {
-    var parsed = msg; //JSON.parse(msg);
-    console.log("Got a message: " + JSON.stringify(msg));
-    logger.log({"msg" : msg, "id" : this.id}); //"gamestate" : this.game.describe()});
-    if ("mynameis" in parsed && (this.state === "welcome" || this.state === "intro")) {
-        this.name = parsed["mynameis"]
-        this.state = "intro"
-    } else if ("command" in parsed && parsed["command"] == "start" && (this.state == "intro")) {
-        awaiting = waitingUsers.shift();
-        if (awaiting == undefined) {
-            waitingUsers.push(this.id);
-            this.state = "waitpartner";
-            this.updateClient();
-        } else {
-            var g = new Game(awaiting, this.id);
-        }
-    } else if ("command" in parsed && parsed["command"] == "quit" && (this.state == "playing")) {
-        var g = this.game();
-        if (g != undefined) {
-            g.quit();
-        }
-    } else if ("command" in parsed && parsed["command"] == "cancel" && (this.state == "waitpartner")) {
-        this.state = "intro";
-        waitingUsers = []; //waitingUsers.filter(function(elt) { return elt != this.id; });
-        // TO DO: to avoid race conditions, really should go through list and remove this.id.
-        //  but that filter function has a bug; deal with it later.
-     } else if ("command" in parsed && ["left", "right", "up", "down", "toggle"].indexOf(parsed["command"]) > -1  && (this.state == "playing")) {
-        this.game().move(parsed["command"], this.id)
-        logger.log({result: this.game().describe(), board: this.game().board});
-     } else if ("chat" in parsed && this.game() != undefined) {
-        var friend = this.game().otherUser(this);
-        friend.sendChat(this,parsed.chat);
-     }
-    updateEveryone(); //this.updateClient();
+  var parsed = msg; //JSON.parse(msg);
+  console.log("Got a message: " + JSON.stringify(msg));
+  logger.log({
+    "msg": msg,
+    "id": this.id
+  }); //"gamestate" : this.game.describe()});
+  if ("mynameis" in parsed && (this.state === "welcome" || this.state === "intro")) {
+    this.name = parsed["mynameis"]
+    this.state = "intro"
+  } else if ("command" in parsed && parsed["command"] == "start" && (this.state == "intro")) {
+    awaiting = waitingUsers.shift();
+    if (awaiting == undefined) {
+      waitingUsers.push(this.id);
+      this.state = "waitpartner";
+      this.updateClient();
+    } else {
+      var g = new Game(awaiting, this.id);
+    }
+  } else if ("command" in parsed && parsed["command"] == "quit" && (this.state == "playing")) {
+    var g = this.game();
+    if (g != undefined) {
+      g.quit();
+    }
+  } else if ("command" in parsed && parsed["command"] == "cancel" && (this.state == "waitpartner")) {
+    this.state = "intro";
+    waitingUsers = []; //waitingUsers.filter(function(elt) { return elt != this.id; });
+    // TO DO: to avoid race conditions, really should go through list and remove this.id.
+    //  but that filter function has a bug; deal with it later.
+  } else if ("command" in parsed && ["left", "right", "up", "down", "toggle"].indexOf(parsed["command"]) > -1 && (this.state == "playing")) {
+    this.game().move(parsed["command"], this.id)
+    logger.log({
+      result: this.game().describe(),
+      board: this.game().board
+    });
+  } else if ("chat" in parsed && this.game() != undefined) {
+    var friend = this.game().otherUser(this);
+    friend.sendChat(this, parsed.chat);
+  }
+  updateEveryone(); //this.updateClient();
 }
 
 User.prototype.quit = function() {
-    console.log("Should detatch " + this.name + " from any game in progress here")
-    if (this.id in games) {
-        games[this.id].quit();
-    }
-    this.state = "intro"
+  console.log("Should detatch " + this.name + " from any game in progress here")
+  if (this.id in games) {
+    games[this.id].quit();
+  }
+  this.state = "intro"
 }
 
-var users = {};   // users indexed by socket id
-var waitingUsers = [];  // people waiting to join a game
-var games = {};   // games indexed by user's socket id.  Games are listed twice.
+var users = {}; // users indexed by socket id
+var waitingUsers = []; // people waiting to join a game
+var games = {}; // games indexed by user's socket id.  Games are listed twice.
 
 function peeps() {
-    userlist = [];
-    for (var uid in users) {
-        userlist.push(users[uid].name);
-    }
-    return userlist;
+  userlist = [];
+  for (var uid in users) {
+    userlist.push(users[uid].name);
+  }
+  return userlist;
 }
 
 function updateEveryone() {
-    for (var uid in users) {
-        users[uid].updateClient();
-    }
+  for (var uid in users) {
+    users[uid].updateClient();
+  }
 }
 
 function finduser(id) {
-    if (id in users) {
-        return users[id];
-    } else {
-        return new User(id)
-    }
+  if (id in users) {
+    return users[id];
+  } else {
+    return new User(id)
+  }
 }
-
 /*
 
 O     O

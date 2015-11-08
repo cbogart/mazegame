@@ -5,13 +5,22 @@
   <script src="gamecommon.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
   <style>
+   #gameParts {
+     display:flex;
+   }
    #pixstuff {
-      float:left;
       width: 400px;
-      height: 1200px;
+      height: 400px;
    }
    #chatstuff {
-
+     height: 800px;
+     flex-grow: 1;
+     height:300px;
+     overflow:scroll;
+     border:1px solid black;
+   }
+   #chat {
+     width:100%;
    }
   </style>
   </head>
@@ -26,9 +35,7 @@
     <!--http://stackoverflow.com/questions/20539196/creating-svg-elements-dynamically-with-javascript-inside-html-->
 
       function drawGame(board) {
-         $("#gamepicture").empty();
-         var svg = document.getElementById('gamepicture'); //$('#gamepicture');
-         gamecommon.drawGame(board, svg);
+         gamecommon.drawGame(board, $("#gamepicture"));
       }
       function connect() {
         socket = io.connect(window.location.href);
@@ -39,48 +46,26 @@
         socket.on('reconnecting', function( nextRetry ){ status_update('Reconnecting in ' + nextRetry + ' milliseconds'); });
         socket.on('reconnect_failed', function(){ status_update('Reconnect Failed'); });
         socket.on('update', function(msg) { redisplayBasedOn(msg); status_update(msg.game); });
-        socket.on('gameupdate', function(msg) { redisplayBasedOn(msg); game_update(msg); });
+        socket.on('gameupdate', function(msg) { redisplayBasedOn(msg); drawGame(msg); });
         socket.on('chat', function(msg) { chatlog(msg.from, msg.text); });
       }
 
       function redisplayBasedOn(msg) {
         if ("state" in msg) {
+            $("#connect").hide();
+            $("#name").hide();
+            $("#setName").hide();
+            $("#startGame").hide();
+            $("#giveUpWaiting").hide();
+            $("#quitGame").hide();
             switch (msg["state"]) {
-                case "welcome":
-                    document.getElementById("connect").style.visibility='hidden';
-                    document.getElementById("setName").style.visibility='visible';
-                    document.getElementById("startGame").style.visibility='hidden';
-                    document.getElementById("giveUpWaiting").style.visibility='hidden';
-                    document.getElementById("quitGame").style.visibility='hidden';
-                    break;
-                case "intro":
-                    document.getElementById("connect").style.visibility='hidden';
-                    document.getElementById("setName").style.visibility='visible';
-                    document.getElementById("startGame").style.visibility='visible';
-                    document.getElementById("giveUpWaiting").style.visibility='hidden';
-                    document.getElementById("quitGame").style.visibility='hidden';
-                    break;
-               case "waitpartner":
-                    document.getElementById("connect").style.visibility='hidden';
-                    document.getElementById("setName").style.visibility='hidden';
-                    document.getElementById("startGame").style.visibility='hidden';
-                    document.getElementById("giveUpWaiting").style.visibility='visible';
-                    document.getElementById("quitGame").style.visibility='hidden';
-                    break;
-                case "playing":
-                    document.getElementById("connect").style.visibility='hidden';
-                    document.getElementById("setName").style.visibility='hidden';
-                    document.getElementById("startGame").style.visibility='hidden';
-                    document.getElementById("giveUpWaiting").style.visibility='hidden';
-                    document.getElementById("quitGame").style.visibility='visible';
-                    break;
-                default:
-                    document.getElementById("connect").style.visibility='visible';
-                    document.getElementById("setName").style.visibility='hidden';
-                    document.getElementById("startGame").style.visibility='hidden';
-                    document.getElementById("giveUpWaiting").style.visibility='hidden';
-                    document.getElementById("quitGame").style.visibility='hidden';
-                    break;
+                case "welcome":     $("#setName").show();
+                                    $("#name").show();          break;
+                case "intro":       $("#setName").show();
+                case "waitpartner": status_update("Waiting for partner to join the game");
+                                    break;
+                //case "playing":     $("#quitGame").show();      break;
+                default:            $("#connect").show();       break;
             }
        }
       }
@@ -89,18 +74,17 @@
         $('#status').html(status);
       }
 
-      function game_update(status) {
-        //$('#gameboard').html(JSON.stringify(status));
-        drawGame(status);
-      }
-
       function game_keypress(key) {
           switch (key) {
-            case 38: command("up"); break;
+            case 38: if (key.shiftKey)
+                        { command("toggle"); }
+                     else
+                        { command("up"); }
+                     break;
             case 39: command("right"); break;
             case 40: command("down"); break;
             case 37: command("left"); break;
-            case 32: command("toggle"); break;
+            //case 32: command("toggle"); break;
           }
       }
 
@@ -109,6 +93,7 @@
       }
 
       function sendName(n) {
+        status_update("Welcome, " + n);
         socket.emit('message', {"mynameis": n});
       }
       function chat(txt) {
@@ -127,32 +112,44 @@
     </script>
 
     <h1>Maze game</h1>
-    Try to get to the yellow star treasure room.
-    You have an invisible partner in this maze.  You can talk to them by typing in <thead>
-      chat window to the right.
-    When they step on a switch (<img src="/images/toggle.png" width=10 height=10>),
-    the grey barriers will move to open up different pathways.
-    <br/>
-    Your partner cannot see <em>your</em> switches and barriers, and can pass through them freely.
-    Unfortunately, they have their own switches and barriers, and a treasure room
-    in a different place, that <em>you</em> cannot see.
+    You <img src="/images/meeple.png" width=13 height=13> and
+    your friend are lost in almost identical mazes, each looking for
+    treasure <img src="/images/goal.png" width=13 height=13>.  You only
+    win if <em>both</em> of you reach the treasures.  Your friend's
+    maze is just like yours, but the doors, switches, and treasure are
+    not in the same place.
+    <br>
+    You can help each other by talking using a chat window on the right.
+    <br>
+    But there's a catch!  The mysterious symbols you see written on the
+    floor <img src="/images/toggle.png" width=13 height=13> tell you the
+    location of invisible
+    tripwires in your friend's maze: when your friend steps into those
+    rooms, doors open and close in <em>your</em> maze.
+    <br>
     So you'll have to cooperate to get both of you to your respective treasure rooms!
+    <p>
+    Use arrow keys to move. Use shift-uparrow to try "trigger" a tripwire again
+    without moving (if there's one present -- but you can't see them!)
+
     <div><p id="status">Waiting for input</p></div>
     <input type="text" id="name"></input>
     <button id="connect" onClick='connect()'>Connect</button>
     <!--<button id="disconnect" onClick='disconnect()'>Disconnect</button>-->
-    <button id="setName" onClick='sendName(document.getElementById("name").value); command("start");'>Set Name</button>
+    <button id="setName" onClick='sendName($("#name")[0].value); command("start");'>Enter your name</button>
     <button id="startGame" onClick='command("start")'>Start Game</button>
     <button id="giveUpWaiting" onClick='command("cancel")'>Stop waiting for a partner</button>
     <button id="quitGame" onClick='command("quit")'>Quit Game</button>
     <div><p id="gameboard"></p></div>
-    <div id="pixstuff"><svg id="gamepicture"></svg></div>
-    <div id="chatstuff"><div style='height:400px;overflow:scroll;border:1px solid black;' id="chatlog" ></div>
-    Chat with your partner:<br/> <input type=textarea id=chat name=chat class=chat maxlength='140'/></div>
+    <div id="gameParts">
+    <div id="pixstuff" ><svg id="gamepicture"></svg></div>
+    <div id="chatstuff" ><div id="chatlog" ></div>
+    <input type=textarea id=chat name=chat class=chat maxlength='140'/></div>
+  </div>
     <script>
         redisplayBasedOn({"state": "welcome"});
         $(document).keydown(function(e) {
-            if ([37,38,39,40,32].indexOf(e.which) > -1) {
+            if ([37,38,39,40].indexOf(e.which) > -1) {  //32 was toggle
                 game_keypress(e.which);
                 e.preventDefault();
             };

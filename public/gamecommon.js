@@ -14,7 +14,23 @@
      "dooropen": new Audio("/sounds/door_open.ogg"),
      "wallhit": new Audio("/sounds/Boing.ogg")
    };
-   exports.drawGame = function (board, svg) {
+   exports.addElt = function(svg, tag, attrs) {
+     var shape = document.createElementNS("http://www.w3.org/2000/svg", tag);
+     for (a in attrs) {
+       if (a.slice(0, 6) == "xlink:") {
+         shape.setAttributeNS('http://www.w3.org/1999/xlink', a, attrs[a]);
+       } else {
+         shape.setAttribute(a, attrs[a]);
+       }
+     }
+     svg.appendChild(shape);
+     return shape;
+   }
+
+   exports.drawGame = function (board, svgjq) {
+        svgjq.empty();
+        addElt = exports.addElt;
+        svg = svgjq[0];
         var scale = 30;
         var leng = 2.2;
         for (a in board.animations) {
@@ -27,6 +43,7 @@
             exports.sounds.dooropen.play();
           }
         }
+
         board.animations = [];
         svg.setAttribute('width', board["size_x"]*scale);
         svg.setAttribute('height', board["size_y"]*scale);
@@ -41,112 +58,81 @@
                     contents = cell['contents'];
                 }
                 if (cell['room'] == "0") {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                    shape.setAttribute('x', x*scale);
-                    shape.setAttribute('y', y*scale);
-                    shape.setAttribute('width', scale);
-                    shape.setAttribute('height', scale);
-                    shape.setAttribute('stroke',  "black");
-                    shape.setAttribute('fill',  "white");
-                    svg.appendChild(shape);
+                    addElt(svg, "rect", {'x': x*scale,   'y': y*scale,
+                                         'width': scale, 'height': scale,
+                                         'stroke':  "black",
+                                         'fill':  "white"});
                 }
                 if (cell['room'] == "|") {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                    shape.setAttribute('x',  x*scale + scale/2 - scale/6 -1);
-                    shape.setAttribute('y',  y*scale + scale/2 - scale/2);
-                    shape.setAttribute('width',  scale/3 + 2);
-                    shape.setAttribute('height',  scale);
-                    shape.setAttribute('fill',  "black");
-                    svg.appendChild(shape);
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                    shape.setAttribute('x',  x*scale + scale/2 - scale/6 + 1);
-                    shape.setAttribute('y',  y*scale + scale/2 - scale/2 - 2);
-                    shape.setAttribute('width',  scale/3 - 2);
-                    shape.setAttribute('height',  scale + 4);
-                    shape.setAttribute('fill',  "white");
-                    svg.appendChild(shape);
+                    addElt(svg, "rect", { 'x':  x*scale + scale/2 - scale/6 -1,
+                                          'y':  y*scale + scale/2 - scale/2,
+                                          'width':  scale/3 + 2,
+                                          'height':  scale,
+                                          'fill':  "black"});
+                    addElt(svg, "rect", {'x':  x*scale + scale/2 - scale/6 + 1,
+                                          'y':  y*scale + scale/2 - scale/2 - 2,
+                                          'width':  scale/3 - 2,
+                                          'height':  scale + 4,
+                                          'fill':  "white"});
                     if (contents.indexOf('barrier') > -1) {
-                        var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                        shape.setAttribute('x',  x*scale + scale/2 - scale/6);
-                        shape.setAttribute('y',  y*scale + scale/2 - 1);
-                        shape.setAttribute('width',  scale/3);
-                        shape.setAttribute('height',  2);
-                        shape.setAttribute('fill',  "grey");
-                        svg.appendChild(shape);
+                        addElt(svg, "rect", {'x':  x*scale + scale/2 - scale/6,
+                                              'y':  y*scale + scale/2 - 1,
+                                              'width':  scale/3,
+                                              'height':  2,
+                                              'fill':  "grey"});
                     }
                 }
                 if (cell['room'] == "-") {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                    shape.setAttribute('x',  x*scale + scale/2- scale/2);
-                    shape.setAttribute('y',  y*scale + scale/2- scale/6-1);
-                    shape.setAttribute('width',  scale);
-                    shape.setAttribute('height',  scale/3 + 2);
-                    shape.setAttribute('fill',  "black");
-                    svg.appendChild(shape);
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                    shape.setAttribute('x',  x*scale + scale/2- scale/2 - 2);
-                    shape.setAttribute('y',  y*scale + scale/2- scale/6 + 1);
-                    shape.setAttribute('width',  scale + 4);
-                    shape.setAttribute('height',  scale/3 - 2);
-                    shape.setAttribute('fill',  "white");
-                    svg.appendChild(shape);
+                  addElt(svg, "rect", {'x':  x*scale + scale/2- scale/2,
+                                       'y':  y*scale + scale/2- scale/6-1,
+                                          'width':  scale,
+                                          'height':  scale/3 + 2,
+                                          'fill':  "black"});
+                    addElt(svg, "rect", { 'x':  x*scale + scale/2- scale/2 - 2,
+                                          'y':  y*scale + scale/2- scale/6 + 1,
+                                          'width':  scale + 4,
+                                          'height':  scale/3 - 2,
+                                          'fill':  "white"});
                     if (contents.indexOf('barrier') > -1) {
-                        var shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                        shape.setAttribute('x',  x*scale + scale/2- 1);
-                        shape.setAttribute('y',  y*scale + scale/2- scale/6);
-                        shape.setAttribute('width',  2);
-                        shape.setAttribute('height',  scale/3);
-                        shape.setAttribute('fill',  "grey");
-                        svg.appendChild(shape);
+                        addElt(svg, "rect", {'x':  x*scale + scale/2- 1,
+                                             'y':  y*scale + scale/2- scale/6,
+                                              'width':  2,
+                                              'height':  scale/3,
+                                              'fill':  "grey"});
                      }
                 }
                 if (contents.indexOf("goal") > -1) {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
-                    shape.setAttribute('x',  x*scale );
-                    shape.setAttribute('y',  y*scale);
-                    shape.setAttribute('height',  scale);
-                    shape.setAttribute('width',  scale);
-                    shape.setAttributeNS('http://www.w3.org/1999/xlink', "xlink:href", "/images/goal.png")
-                    svg.appendChild(shape);
-
+                    addElt(svg, "image", {'x':  x*scale+2 , 'y':  y*scale+2,
+                                          'height':  scale-4,  'width':  scale-4,
+                                          'xlink:href': '/images/goal.png'});
                 }
                 if (contents.indexOf("switch") > -1) {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
-                    shape.setAttribute('x',  x*scale + scale/2+ scale/6);
-                    shape.setAttribute('y',  y*scale + scale/2+ scale/6);
-                    shape.setAttribute('width',  scale/3);
-                    shape.setAttribute('height',  scale/3);
-                    shape.setAttributeNS('http://www.w3.org/1999/xlink', "xlink:href", "/images/toggle.png")
-                    svg.appendChild(shape);
+                    addElt(svg, "image", {'x':  x*scale + scale/2+ scale/6,
+                                          'y':  y*scale + scale/2+ scale/6,
+                                          'width': scale/3, 'height':  scale/3,
+                                          'xlink:href': '/images/toggle.png'});
                 }
                 if (contents.indexOf("me") > -1) {
-                    var shape = document.createElementNS("http://www.w3.org/2000/svg", "image");
-                    shape.setAttribute('x',  x*scale );
-                    shape.setAttribute('y',  y*scale);
-                    shape.setAttribute('height',  scale);
-                    shape.setAttribute('width',  scale);
-                    shape.setAttributeNS('http://www.w3.org/1999/xlink', "xlink:href", "/images/meeple.png")
+                    var shape = addElt(svg, "image", {'x':  x*scale, 'y':  y*scale,
+                                          'height': scale, 'width':  scale,
+                                          "xlink:href": "/images/meeple.png"});
                     if (board.myturn) {
-                        var blinkon = document.createElementNS("http://www.w3.org/2000/svg", "set");
-                        blinkon.setAttribute('id', 'show');
-                        blinkon.setAttribute('attributeName', 'visibility');
-                        blinkon.setAttribute('attributeType', 'CSS');
-                        blinkon.setAttribute('to', 'visible');
-                        blinkon.setAttribute('begin', '0s; hide.end');
-                        blinkon.setAttribute('dur', '1s');
-                        blinkon.setAttribute('fill', 'freeze');
-                        var blinkoff = document.createElementNS("http://www.w3.org/2000/svg", "set");
-                        blinkoff.setAttribute('id', 'hide');
-                        blinkoff.setAttribute('attributeName', 'visibility');
-                        blinkoff.setAttribute('attributeType', 'CSS');
-                        blinkoff.setAttribute('to', 'hidden');
-                        blinkoff.setAttribute('begin', 'show.end');
-                        blinkoff.setAttribute('dur', '1s');
-                        blinkoff.setAttribute('fill', 'freeze');
-                        shape.appendChild(blinkon);
-                        shape.appendChild(blinkoff);
+                        addElt(shape, "set", {'id': 'show',
+                                              'attributeName': 'visibility',
+                                              'attributeType': 'CSS',
+                                              'to': 'visible',
+                                              'begin': '0s; hide.end',
+                                              'dur': '.2s',
+                                              'fill': 'freeze'});
+                        addElt(shape, "set", {'id': 'hide',
+                                              'attributeName': 'visibility',
+                                              'attributeType': 'CSS',
+                                              'to': 'hidden',
+                                              'begin': 'show.end',
+                                              'dur': '.2s',
+                                              'fill': 'freeze'});
                     }
-                    svg.appendChild(shape);
+                    //svg.appendChild(shape);
                 }
           }
         }

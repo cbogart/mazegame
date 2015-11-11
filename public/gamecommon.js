@@ -12,7 +12,9 @@
    exports.sounds = {
      "doorhit": new Audio("/sounds/Boing.ogg"),
      "dooropen": new Audio("/sounds/door_open.ogg"),
-     "wallhit": new Audio("/sounds/Boing.ogg")
+     "wallhit": new Audio("/sounds/Boing.ogg"),
+     "gotgoal": new Audio("/sounds/halfwon.ogg"),
+     "won": new Audio("/sounds/won.ogg")
    };
    exports.addElt = function(svg, tag, attrs) {
      var shape = document.createElementNS("http://www.w3.org/2000/svg", tag);

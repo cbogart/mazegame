@@ -206,7 +206,7 @@ Game.prototype.describe = function() {
     var turn2 = " (turn) ";
     var turn1 = "";
   }
-  return users[this.uid1].name + turn1 + " and " + users[this.uid2].name + turn2 + " have score " + this.board.score + " with penalty " + this.board.penalty + (this.board.won ? " and won!" : "");
+  return users[this.uid1].name + turn1 + " and " + users[this.uid2].name + turn2 + " have score " + this.board.score + " with penalty " + this.board.penalty + "after " + this.board.moves + " moves " + (this.board.won ? " and won!" : "");
 };
 
 Game.prototype.boardOf = function(uid) {
@@ -268,6 +268,7 @@ User.prototype.updateClient = function() {
   });
   if (game != undefined && this.state == "playing") {
     this.socket.emit("gameupdate", game.boardOf(this.id));
+    game.board.animations = {'U1':[], 'U2':[]};
   }
 }
 
@@ -616,7 +617,7 @@ function emptyBoard(width, height) {
     }
     return { "score": 0,
              "penalty": 0,
-             "turns": 0,
+             "moves": 0,
              "won" : false,
              "size_x": width,
              "size_y": height,
@@ -743,11 +744,11 @@ function genBoard(mapA, mapB) {
     }
     return { "score": 0,
              "penalty": 0,
-             "turns": 0,
              "won" : false,
              "size_x": maxx,
              "size_y": maxy,
              "turn" : 'U1',
+             "moves": 0,
              "cells": cells,
              "animations": {'U1':[], 'U2':[]} };
 }
@@ -774,10 +775,11 @@ function movePlayer(direction, board, player, turnsMatter) {
         case "down": if (loc[0] < board.size_x-1) { newloc = [+loc[0]+2, loc[1]]; } break;
         case "left": if (loc[1] > 1) { newloc = [loc[0], loc[1]-2]; } break;
         case "right": if (loc[1] < board.size_y-1) { newloc = [loc[0], +loc[1]+2]; } break;
+        case "toggle": newloc = loc; break;
     }
-    console.log("Trying to moving " + player + " from " + loc + " to " + newloc);
+    console.log("Trying to move " + player + " from " + loc + " to " + newloc);
 
-    if (newloc[0] > -1) {
+    if (newloc[0] > -1 && newloc != loc) {
         var passageCoords = [(+loc[0]+newloc[0])/2,(+loc[1]+newloc[1])/2]
         console.log("Passage coordinates are " + passageCoords)
         var hallway = iscorridor(board, passageCoords);
@@ -786,6 +788,7 @@ function movePlayer(direction, board, player, turnsMatter) {
             board.animations[player].push("move_" + direction);
             board.turn = other;
             board.moves++;
+
         } else if (hallway && barrier) {
             board.turn = other;
             board.animations[player].push("bouncehard_" + direction);
@@ -804,6 +807,18 @@ function movePlayer(direction, board, player, turnsMatter) {
         console.log("..." + player + " in " + JSON.stringify(board.cells[newloc[0]][newloc[1]]) + " = " +
                    (player in board.cells[newloc[0]][newloc[1]]))
         insert(board, newloc, player, "me")
+        var goal = checkif(board, newloc, player, "goal");
+        if (goal) {
+            remove(board, newloc, player, "goal");
+            if (!findThing(board, other, "goal")) {
+              board.won = True;
+              board.score = 100;
+              board.animations[other].push("won");
+              board.animations[player].push("won");
+            } else {
+              board.animations[player].push("gotgoal");
+            }
+        }
         console.log("Checking switch for " + other + " instead of " + player + ": " + checkif(board, newloc, other, "switch"))
         if (checkif(board, newloc, other, "switch")) {
             console.log("...yep!  Flipping barriers")

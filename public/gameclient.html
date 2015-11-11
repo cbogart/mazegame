@@ -75,7 +75,7 @@
       }
 
       function game_keypress(key) {
-          switch (key) {
+          switch (key.which) {
             case 38: if (key.shiftKey)
                         { command("toggle"); }
                      else
@@ -149,8 +149,10 @@
     <script>
         redisplayBasedOn({"state": "welcome"});
         $(document).keydown(function(e) {
+            console.log("key=", e.which, " shift=", e.shiftKey);
             if ([37,38,39,40].indexOf(e.which) > -1) {  //32 was toggle
-                game_keypress(e.which);
+                console.log("...and calling game_keypress");
+                game_keypress(e);
                 e.preventDefault();
             };
         });

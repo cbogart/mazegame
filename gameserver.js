@@ -142,7 +142,6 @@ function boot() {
 }
 function shutdown() {
   socketlistener.close();
-  io.close();
 }
 
 if (require.main === module) {

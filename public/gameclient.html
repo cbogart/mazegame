@@ -33,12 +33,12 @@
       }
 
     <!--http://stackoverflow.com/questions/20539196/creating-svg-elements-dynamically-with-javascript-inside-html-->
-
+      gamecommon.init_sounds(document);
       function drawGame(board) {
          gamecommon.drawGame(board, $("#gamepicture"));
       }
       function connect() {
-        socket = io.connect(window.location.href);
+        window.socket = io.connect(window.location.href);
 
         // Callbacks for standard socket.io server events
         socket.on('connect', function(){ status_update('Connected to Server'); });
@@ -61,8 +61,8 @@
             switch (msg["state"]) {
                 case "welcome":     $("#setName").show();
                                     $("#name").show();          break;
-                case "intro":       $("#setName").show();
-                case "waitpartner": status_update("Waiting for partner to join the game");
+                //case "intro":       $("#setName").show();
+                case "waitpartner": status_update("Welcome, " + $("#name")[0].value + "! Please wait for your partner to join the game.");
                                     break;
                 //case "playing":     $("#quitGame").show();      break;
                 default:            $("#connect").show();       break;
@@ -149,9 +149,7 @@
     <script>
         redisplayBasedOn({"state": "welcome"});
         $(document).keydown(function(e) {
-            console.log("key=", e.which, " shift=", e.shiftKey);
             if ([37,38,39,40].indexOf(e.which) > -1) {  //32 was toggle
-                console.log("...and calling game_keypress");
                 game_keypress(e);
                 e.preventDefault();
             };

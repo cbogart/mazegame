@@ -114,7 +114,7 @@ function boot() {
   };
 
   io = require('socket.io').listen(socketlistener);
-  io.set('log level', 1);
+  //io.set('log level', 1);
 
   // on a 'connection' event
 
@@ -573,7 +573,7 @@ mapD=
    o Omniscient solver: move both pawns to the exits
 */
 
-var debuglevel = 4;
+var debuglevel = 0;
 function debug(level, text) {
     if (level < debuglevel) {
         console.log(text);

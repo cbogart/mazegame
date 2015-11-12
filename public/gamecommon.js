@@ -9,12 +9,26 @@
     };
    exports.commonTest = function () { return 42; }
 
+   exports.soundfiles = {
+     "doorhit": "/sounds/Boing.ogg",
+     "dooropen": "/sounds/door_open.ogg",
+     "wallhit": "/sounds/Boing.ogg",
+     "gotgoal": "/sounds/halfwon.ogg",
+     "won": "/sounds/won.ogg"
+   }
+   exports.init_sounds = function(document) {
+     audio = document.createElement('audio');
+     for (key in exports.soundfiles) {
+       exports.sounds[key] = document.createElement('audio');
+       exports.sounds[key].src = exports.soundfiles[key];
+     }
+   }
    exports.sounds = {
-     "doorhit": new Audio("/sounds/Boing.ogg"),
-     "dooropen": new Audio("/sounds/door_open.ogg"),
-     "wallhit": new Audio("/sounds/Boing.ogg"),
-     "gotgoal": new Audio("/sounds/halfwon.ogg"),
-     "won": new Audio("/sounds/won.ogg")
+     //"doorhit": new Audio("/sounds/Boing.ogg"),
+     //"dooropen": new Audio("/sounds/door_open.ogg"),
+     //"wallhit": new Audio("/sounds/Boing.ogg"),
+     //"gotgoal": new Audio("/sounds/halfwon.ogg"),
+     //"won": new Audio("/sounds/won.ogg")
    };
    exports.addElt = function(svg, tag, attrs) {
      var shape = document.createElementNS("http://www.w3.org/2000/svg", tag);

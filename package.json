@@ -24,6 +24,7 @@
     "thingspeakclient": "^0.4.0"
   },
   "devDependencies": {
-    "mocha": "^2.3.3"
+    "mocha": "^2.3.3",
+    "zombie": "^4.2.1"
   }
 }

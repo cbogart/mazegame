@@ -14,7 +14,7 @@ var http = require('http'),
   os = require("os"),
   express = require("express"),
   Thingspeak = require('thingspeakclient'),
-  server;
+  server, io;
 
 function myIPv6() {
 
@@ -74,111 +74,87 @@ var logger = function(req, res, next) {
 
 //END TEMPO
 
+function boot() {
 
-var server = express();
-server.get('/', function(req, res) {
-  res.sendFile(__dirname + '/public/gameclient.html');
-});
-server.get('/log', function(req, res) {
-  res.sendFile(__dirname + '/mazeGames.log');
-});
-server.use(logger);
-server.use(express.static(__dirname + "/public"));
-socketlistener = server.listen(8080);
-
-/*
-server = http.createServer(function(req,res) {
-    // server code
-    var path = url.parse(req.url).pathname;
-    switch (path) {
-        case '/':
-            fs.readFile(__dirname+"/gameclient.html", function(err,data) {
-                if (err) return send404(res, err);
-                res.writeHead(200, {'Content-Type': 'text/html'});
-                res.write(data, 'utf8');
-                res.end();
-            });
-            break;
-        default:
-            fs.readFile(__dirname+path, function(err,data) {
-                if (err) return send404(res, err);
-                if (path.slice(-3) == ".js") {
-                   res.writeHead(200, {'Content-Type': 'application/javascript'});
-                   res.write(data, 'utf8');
-                } else if (path.slice(-4) == ".png") {
-                   res.writeHead(200, {'Content-Type': 'image/png'});
-                   res.write(data, 'binary');
-                }
-                res.end();
-            });
-            break;
-        //default: send404(res, JSON.stringify(path));
-    }
-})
-*/
-
-Logger = function(fname) {
-  this.theFile = fs.createWriteStream(fname, {
-    flags: 'a'
+  server = express();
+  server.get('/', function(req, res) {
+    res.sendFile(__dirname + '/public/gameclient.html');
   });
-};
-Logger.prototype.log = function(text) {
-  this.theFile.write(JSON.stringify({
-    when: new Date().toISOString(),
-    message: text
-  }) + "\n");
+  server.get('/log', function(req, res) {
+    res.sendFile(__dirname + '/mazeGames.log');
+  });
+  server.use(logger);
+  server.use(express.static(__dirname + "/public"));
+  socketlistener = server.listen(8080);
+
+
+  Logger = function(fname) {
+    this.theFile = fs.createWriteStream(fname, {
+      flags: 'a'
+    });
+  };
+  Logger.prototype.log = function(text) {
+    this.theFile.write(JSON.stringify({
+      when: new Date().toISOString(),
+      message: text
+    }) + "\n");
+  }
+  Logger.prototype.close = function() {
+    this.theFile.end();
+  }
+
+  logger = new Logger("mazeGames.log");
+
+  send404 = function(res, msg) {
+    res.writeHead(404);
+    res.write('404');
+    res.write(" ");
+    res.write(msg);
+    res.end();
+  };
+
+  io = require('socket.io').listen(socketlistener);
+  io.set('log level', 1);
+
+  // on a 'connection' event
+
+  io.sockets.on('connection', function(socket) {
+
+    console.log("Connection " + socket.id + " accepted.");
+
+    var user = finduser(socket.id);
+    user.socket = socket;
+
+    // individual moves/messages from users receieved here
+    socket.on('message', function(message) {
+      user.handle(message);
+    });
+
+    socket.on('disconnect', function() {
+      console.log("Connection " + socket.id + " terminated.");
+      if (socket.id in users) {
+        user.quit();
+        delete users[socket.id];
+      }
+    });
+
+  });
 }
-Logger.prototype.close = function() {
-  this.theFile.end();
+function shutdown() {
+  //console.log(io, server);
+  io.close();
+  socketlistener.close();
 }
 
-logger = new Logger("mazeGames.log");
-
-send404 = function(res, msg) {
-  res.writeHead(404);
-  res.write('404');
-  res.write(" ");
-  res.write(msg);
-  res.end();
-};
-
-
-// socket.io, I choose you
-//var io = require('/usr/local/lib/node_modules/socket.io').listen(server);
-var io = require('socket.io').listen(socketlistener);
-io.set('log level', 1);
-
-/*
-if (42 != gamecommon.commonTest()) {
-    console.log( "ERROR -- Common library not found");
-    console.log(  gamecommon.commonTest());
-}*/
-
-// on a 'connection' event
-
-io.sockets.on('connection', function(socket) {
-
-  console.log("Connection " + socket.id + " accepted.");
-
-  var user = finduser(socket.id);
-  user.socket = socket;
-
-  // now that we have our connected 'socket' object, we can
-  // define its event handlers
-  socket.on('message', function(message) {
-    //console.log("Received message: " + message + " - from client " + socket.id);
-    user.handle(message);
-  });
-
-  socket.on('disconnect', function() {
-    console.log("Connection " + socket.id + " terminated.");
-    if (socket.id in users) {
-      user.quit();
-      delete users[socket.id];
-    }
-  });
-
-});
+if (require.main === module) {
+  boot();
+}
+else {
+  console.info('Running app as a module')
+  exports.boot = boot;
+  exports.shutdown = shutdown;
+  exports.port = 8080; //server.get('port');
+}
 
 function Game(uid1, uid2) {
   console.log("Starting a game with " + uid1 + " and " + uid2);

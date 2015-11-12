@@ -141,9 +141,8 @@ function boot() {
   });
 }
 function shutdown() {
-  //console.log(io, server);
-  io.close();
   socketlistener.close();
+  io.close();
 }
 
 if (require.main === module) {

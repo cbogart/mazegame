@@ -17,11 +17,13 @@
      "won": "/sounds/won.ogg"
    }
    exports.init_sounds = function(document) {
-     audio = document.createElement('audio');
-     for (key in exports.soundfiles) {
+     exports.audio = document.createElement('audio');
+/*     for (key in exports.soundfiles) {
+       console.log("Appending", key, exports.soundfiles[key]);
        exports.sounds[key] = document.createElement('audio');
        exports.sounds[key].src = exports.soundfiles[key];
-     }
+       document.appendChild(exports.sounds[key]);
+     } */
    }
    exports.sounds = {
      //"doorhit": new Audio("/sounds/Boing.ogg"),
@@ -42,7 +44,12 @@
      svg.appendChild(shape);
      return shape;
    }
-
+   exports.playSound = function (soundname)  {
+     exports.audio.pause();
+     exports.audio.src = exports.soundfiles[soundname];
+     exports.audio.load();
+     exports.audio.play();
+   }
    exports.drawGame = function (board, svgjq) {
         svgjq.empty();
         addElt = exports.addElt;
@@ -52,11 +59,17 @@
         for (a in board.animations) {
           console.log("Making noise for ", board.animations[a]);
           if (board.animations[a].slice(0,10) == "bouncehard") {
-            exports.sounds.doorhit.play();
+            exports.playSound("doorhit");
           } else if (board.animations[a].slice(0,6) == "bounce") {
-            exports.sounds.wallhit.play();
+            exports.playSound("wallhit");
           } else if (board.animations[a].slice(0,9) == "doornoise") {
-            exports.sounds.dooropen.play();
+            exports.playSound("dooropen");
+          } else if (board.animations[a].slice(0,3) == "won") {
+            exports.playSound("won");
+          } else if (board.animations[a].slice(0,7) == "gotgoal") {
+            exports.playSound("gotgoal");
+          } else {
+            console.log("   mysterious sound", board.animations[a]);
           }
         }
 

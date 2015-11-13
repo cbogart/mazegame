@@ -242,7 +242,8 @@ User.prototype.updateClient = function() {
   });
   if (game != undefined && this.state == "playing") {
     this.socket.emit("gameupdate", game.boardOf(this.id));
-    game.board.animations = {'U1':[], 'U2':[]};
+    console.log("Just emitted animations for ", this.id, game.board.animations, "->", game.boardOf(this.id).animations);
+    game.board.animations[game.UN(this.id)] = [];
   }
 }
 
@@ -751,11 +752,11 @@ function movePlayer(direction, board, player, turnsMatter) {
         case "right": if (loc[1] < board.size_y-1) { newloc = [loc[0], +loc[1]+2]; } break;
         case "toggle": newloc = loc; break;
     }
-    console.log("Trying to move " + player + " from " + loc + " to " + newloc);
+    //console.log("Trying to move " + player + " from " + loc + " to " + newloc);
 
     if (newloc[0] > -1 && newloc != loc) {
         var passageCoords = [(+loc[0]+newloc[0])/2,(+loc[1]+newloc[1])/2]
-        console.log("Passage coordinates are " + passageCoords)
+        //console.log("Passage coordinates are " + passageCoords)
         var hallway = iscorridor(board, passageCoords);
         var barrier = checkif(board, passageCoords, player, "barrier");
         if (hallway && !barrier) {
@@ -772,14 +773,14 @@ function movePlayer(direction, board, player, turnsMatter) {
         } else if (!hallway) {
             newloc[0] = -1;
             board.animations[player].push("bounce_" + direction);
-            console.log("Blocked passage");
+            //console.log("Blocked passage");
         }
     }
 
     if (newloc[0] > -1) {
         remove(board, loc, player, "me")
-        console.log("..." + player + " in " + JSON.stringify(board.cells[newloc[0]][newloc[1]]) + " = " +
-                   (player in board.cells[newloc[0]][newloc[1]]))
+        //console.log("..." + player + " in " + JSON.stringify(board.cells[newloc[0]][newloc[1]]) + " = " +
+        //           (player in board.cells[newloc[0]][newloc[1]]))
         insert(board, newloc, player, "me")
         var goal = checkif(board, newloc, player, "goal");
         if (goal) {
@@ -935,15 +936,15 @@ function flipBarriers(board, player) {
    for (var x=0; x<board.cells.length; x++) {
        for (var y=0; y<board.cells[x].length; y++) {
            var loc = [x,y]
-           console.log("For " + loc + " cell has " + dump(board, loc))
+           //console.log("For " + loc + " cell has " + dump(board, loc))
            if (checkif(board,loc,player,"barrier")) {
-               console.log("...removing barrier");
+               //console.log("...removing barrier");
                remove(board,loc,player,"barrier");
            } else {
-               console.log("...adding barrier");
+               //console.log("...adding barrier");
                 insert(board,loc,player,"barrier");
            }
-           console.log("  --> and so now " + dump(board, loc));
+           //console.log("  --> and so now " + dump(board, loc));
         }
    }
 }

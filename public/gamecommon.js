@@ -105,10 +105,16 @@
                                           'fill':  "white"});
                     if (contents.indexOf('barrier') > -1) {
                         addElt(svg, "rect", {'x':  x*scale + scale/2 - scale/6,
-                                              'y':  y*scale + scale/2 - 1,
+                                              'y':  y*scale + scale/2 - 2,
                                               'width':  scale/3,
-                                              'height':  2,
-                                              'fill':  "grey"});
+                                              'height':  4,
+                                              'fill':  "#775500"});
+                    } else {
+                        addElt(svg, "rect", {'x':  x*scale + scale/2 - scale/6,
+                                            'y':  y*scale + scale/2 - 2,
+                                            'width':  4,
+                                            'height':  scale/3,
+                                            'fill':  "#775500"});
                     }
                 }
                 if (cell['room'] == "-") {
@@ -123,11 +129,17 @@
                                           'height':  scale/3 - 2,
                                           'fill':  "white"});
                     if (contents.indexOf('barrier') > -1) {
-                        addElt(svg, "rect", {'x':  x*scale + scale/2- 1,
+                        addElt(svg, "rect", {'x':  x*scale + scale/2- 2,
                                              'y':  y*scale + scale/2- scale/6,
-                                              'width':  2,
+                                              'width':  4,
                                               'height':  scale/3,
-                                              'fill':  "grey"});
+                                              'fill':  "#775500"});
+                     } else {
+                       addElt(svg, "rect", {'x':  x*scale + scale/2- 2,
+                                            'y':  y*scale + scale/2- scale/6,
+                                             'width':  scale/3,
+                                             'height':  4,
+                                             'fill':  "#775500"});
                      }
                 }
                 if (contents.indexOf("goal") > -1) {

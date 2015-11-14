@@ -3,6 +3,7 @@
   <head>
   <script src="/socket.io/socket.io.js"></script>
   <script src="gamecommon.js"></script>
+  <script src="utils.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
   <style>
    #gameParts {
@@ -27,9 +28,15 @@
   <body>
     <script type="text/javascript">
       var socket;
-
+      var options = {};
       if (42 != gamecommon.commonTest()) {
         alert("Cannot connect to common library");
+      }
+
+      var urlVars = utils.getUrlVars();
+      console.log(urlVars);
+      if ("map" in urlVars) {
+        options.map = urlVars.map;
       }
 
     <!--http://stackoverflow.com/questions/20539196/creating-svg-elements-dynamically-with-javascript-inside-html-->
@@ -94,17 +101,20 @@
 
       function sendName(n) {
         status_update("Welcome, " + n);
-        socket.emit('message', {"mynameis": n});
+        socket.emit('message', {"mynameis": n, "options": options});
       }
       function chat(txt) {
-        socket.emit('message', {"chat": txt});
+        socket.emit('message', {"chat": txt, "options": options});
       }
       function chatlog(from, text) {
         $("#chatlog").append("<b>" + from + ":</b> " + text + "<br/>");
         $("#chatlog").scrollTop($('#chatlog')[0].scrollHeight);
       }
+      function setOption(key, value) {
+        options[key] = value;
+      }
       function command(cmd) {
-        socket.emit('message', {"command": cmd});
+        socket.emit('message', {"command": cmd, "options": options});
       }
 
       connect();

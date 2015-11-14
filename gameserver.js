@@ -154,15 +154,22 @@ else {
   exports.port = 8080; //server.get('port');
 }
 
-function Game(uid1, uid2) {
-  console.log("Starting a game with " + uid1 + " and " + uid2);
+function Game(uid1, uid2, boardType) {
+  console.log("Starting a game with " + uid1 + " and " + uid2 + " type " + boardType);
   this.uid1 = uid1;
   this.uid2 = uid2;
   users[uid1].state = "playing";
   users[uid2].state = "playing";
   games[uid1] = this;
   games[uid2] = this;
-  this.board = randBoard(); //genBoard(mapA, mapB);
+  if (boardType == "random") {
+    this.board = randBoard(); //genBoard(mapA, mapB);
+  } else if (boardType in mapPairs) {
+    this.board = genBoard(mapPairs[boardType][0], mapPairs[boardType][1]);
+    console.log(boardPicture(this.board, "U1"));
+  } else {
+    this.board = randBoard();
+  }
   this.inform();
 }
 
@@ -272,7 +279,12 @@ User.prototype.handle = function(msg) {
       this.state = "waitpartner";
       this.updateClient();
     } else {
-      var g = new Game(awaiting, this.id);
+      if ("options" in parsed && "map" in parsed.options) {
+        boardType = parsed.options.map;
+      } else {
+        boardType = ""
+      }
+      var g = new Game(awaiting, this.id, boardType);
     }
   } else if ("command" in parsed && parsed["command"] == "quit" && (this.state == "playing")) {
     var g = this.game();
@@ -526,29 +538,42 @@ mapB =
      '0-0+4-4+0-0'];
 
 mapC=
-    ['O     O    ',
+    ['0     0    ',
      '|     |    ',
-     'O-O-O O-O  ',
+     '0-0-0 0-0  ',
      '  | | |    ',
-     '  O-O-O-O  ',
+     '  0-0-0-0  ',
      '  | |   |  ',
-     '  O-O-O O-O',
+     '  0-0-0 0-0',
      '  |   | |  ',
-     'O-O-O-O-O  ',
+     '0-0-0-0-0  ',
      '    |      ',
-     '    O-O-O  '];
+     '    0-0-0  '];
 mapD=
-    ['O     O    ',
+    ['0     0    ',
      '|     |    ',
-     'O-O-O O-O  ',
+     '0-0-0 0-0  ',
      '  | | |    ',
-     '  O-O-O-O  ',
+     '  0-0-0-0  ',
      '  | |   |  ',
-     '  O-O-O O-O',
+     '  0-0-0 0-0',
      '  |   | |  ',
-     'O-O-O-O-O  ',
+     '0-0-0-0-0  ',
      '    |      ',
-     '    O-O-O  '];
+     '    0-0-0  '];
+console.log("IIc:", mapIIcA);
+
+mapPairs = {
+  IIa: [mapIIaA, mapIIaB],
+  IIb: [mapIIbA, mapIIbB],
+  IIc: [mapIIcA, mapIIcB],
+  IId: [mapIIdA, mapIIdB],
+  IIe: [mapIIeA, mapIIeB],
+  IIf: [mapIIfA, mapIIfB],
+  AB: [mapA,mapB],
+  CD: [mapC,mapD]
+}
+console.log("IIc Both:", mapPairs["IIc"])
 
 /* Generating more mazes:
    o Is-connected function: are there disconnected rooms?
@@ -674,6 +699,7 @@ function randBoard() {
 }
 
 function genBoard(mapA, mapB) {
+    console.log(mapA, mapB);
     var cells = []
     var maxx = mapA[0].length;
     var maxy = mapA.length;
@@ -681,6 +707,7 @@ function genBoard(mapA, mapB) {
         row = mapA[y];
         cells[y] = [];
         for(x = 0; x<row.length; x++) {
+            console.log(y,x,row, row.length);
             var cell = {};
             switch (row.charAt(x)) {
                 case '1': cell["room"] = '0'; cell['U1'] = {"contents" : ["me"]}; break;

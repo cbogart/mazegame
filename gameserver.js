@@ -187,7 +187,7 @@ Game.prototype.describe = function() {
     var turn2 = " (turn) ";
     var turn1 = "";
   }
-  return users[this.uid1].name + turn1 + " and " + users[this.uid2].name + turn2 + " have score " + this.board.score + " with penalty " + this.board.penalty + "after " + this.board.moves + " moves " + (this.board.won ? " and won!" : "");
+  return users[this.uid1].name + turn1 + " and " + users[this.uid2].name + turn2 + " have score " + this.board.score + " with penalty " + this.board.penalty + " after " + this.board.moves + " moves " + (this.board.won ? " and won!" : "");
 };
 
 Game.prototype.boardOf = function(uid) {
@@ -561,7 +561,15 @@ mapD=
      '0-0-0-0-0  ',
      '    |      ',
      '    0-0-0  '];
-console.log("IIc:", mapIIcA);
+
+StupidA=
+    ['1-2',
+     '| |',
+     '0-0']
+StupidB=
+   ['2-1',
+    '| |',
+    '0-0']
 
 mapPairs = {
   IIa: [mapIIaA, mapIIaB],
@@ -571,7 +579,8 @@ mapPairs = {
   IIe: [mapIIeA, mapIIeB],
   IIf: [mapIIfA, mapIIfB],
   AB: [mapA,mapB],
-  CD: [mapC,mapD]
+  CD: [mapC,mapD],
+  Stupid: [ StupidA, StupidB ]
 }
 console.log("IIc Both:", mapPairs["IIc"])
 
@@ -812,8 +821,9 @@ function movePlayer(direction, board, player, turnsMatter) {
         var goal = checkif(board, newloc, player, "goal");
         if (goal) {
             remove(board, newloc, player, "goal");
-            if (!findThing(board, other, "goal")) {
-              board.won = True;
+            console.log("Win check:",player, findThing(board,player,"goal"),other,findThing(board,other,"goal"));
+            if (findThing(board, other, "goal") == -1) {
+              board.won = true;
               board.score = 100;
               board.animations[other].push("won");
               board.animations[player].push("won");
@@ -851,7 +861,7 @@ function checkif(board, loc, player, item) {
     return (player in board.cells[loc[0]][loc[1]] && board.cells[loc[0]][loc[1]][player]["contents"].indexOf(item) > -1);
 }
 function checkroom(board, loc, item) {
-    debug(5,"checkroom(board," + loc + "," + item + ")");
+    console.log("checkroom(board," + loc + "," + item + ")");
     return ("room" in board.cells[loc[0]][loc[1]] && board.cells[loc[0]][loc[1]].room.indexOf(item) > -1);
 }
 function iscorridor(board, loc) {

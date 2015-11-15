@@ -37,6 +37,8 @@
       console.log(urlVars);
       if ("map" in urlVars) {
         options.map = urlVars.map;
+      } if ("turnsMatter" in urlVars) {
+        options.turnsMatter = (urlVars.turnsMatter == "true");
       }
 
     <!--http://stackoverflow.com/questions/20539196/creating-svg-elements-dynamically-with-javascript-inside-html-->

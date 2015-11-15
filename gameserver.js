@@ -154,14 +154,15 @@ else {
   exports.port = 8080; //server.get('port');
 }
 
-function Game(uid1, uid2, boardType) {
-  console.log("Starting a game with " + uid1 + " and " + uid2 + " type " + boardType);
+function Game(uid1, uid2, boardType, turnsMatter) {
+  console.log("Starting a game with " + uid1 + " and " + uid2 + " type " + boardType + " turnsmatter " + turnsMatter);
   this.uid1 = uid1;
   this.uid2 = uid2;
   users[uid1].state = "playing";
   users[uid2].state = "playing";
   games[uid1] = this;
   games[uid2] = this;
+  this.turnsMatter = turnsMatter;
   if (boardType == "random") {
     this.board = randBoard(); //genBoard(mapA, mapB);
   } else if (boardType in mapPairs) {
@@ -211,7 +212,7 @@ Game.prototype.otherUser = function(user) {
 }
 
 Game.prototype.move = function(move, uid) {
-  movePlayer(move, this.board, this.UN(uid), true);
+  movePlayer(move, this.board, this.UN(uid), this.turnsMatter);
 }
 
 Game.prototype.quit = function() {
@@ -284,7 +285,12 @@ User.prototype.handle = function(msg) {
       } else {
         boardType = ""
       }
-      var g = new Game(awaiting, this.id, boardType);
+      if ("options" in parsed && "turnsMatter" in parsed.options) {
+        turnsMatter = parsed.options.turnsMatter;
+      } else {
+        turnsMatter = true;
+      }
+      var g = new Game(awaiting, this.id, boardType, turnsMatter);
     }
   } else if ("command" in parsed && parsed["command"] == "quit" && (this.state == "playing")) {
     var g = this.game();

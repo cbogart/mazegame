@@ -162,7 +162,6 @@ function Game(uid1, uid2, boardType, turnsMatter) {
   users[uid2].state = "playing";
   games[uid1] = this;
   games[uid2] = this;
-  this.turnsMatter = turnsMatter;
   if (boardType == "random") {
     this.board = randBoard(); //genBoard(mapA, mapB);
   } else if (boardType in mapPairs) {
@@ -171,6 +170,7 @@ function Game(uid1, uid2, boardType, turnsMatter) {
   } else {
     this.board = randBoard();
   }
+  this.board.turnsMatter = turnsMatter;
   this.inform();
 }
 
@@ -212,7 +212,7 @@ Game.prototype.otherUser = function(user) {
 }
 
 Game.prototype.move = function(move, uid) {
-  movePlayer(move, this.board, this.UN(uid), this.turnsMatter);
+  movePlayer(move, this.board, this.UN(uid));
 }
 
 Game.prototype.quit = function() {
@@ -778,9 +778,9 @@ Array.prototype.remove_item = function (item) {
 
 
 
-function movePlayer(direction, board, player, turnsMatter) {
+function movePlayer(direction, board, player) {
     board.animations = {'U1':[], 'U2':[]};
-    if (board.turn != player && turnsMatter) {
+    if (board.turn != player && board.turnsMatter) {
         console.log("Not your turn, " + player + "!");
         return;
     }

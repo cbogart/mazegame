@@ -157,7 +157,7 @@
                     var shape = addElt(svg, "image", {'x':  x*scale, 'y':  y*scale,
                                           'height': scale, 'width':  scale,
                                           "xlink:href": "/images/meeple.png"});
-                    if (board.myturn) {
+                    if (board.myturn && board.turnsMatter) {
                         addElt(shape, "set", {'id': 'show',
                                               'attributeName': 'visibility',
                                               'attributeType': 'CSS',

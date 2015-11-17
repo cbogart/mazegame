@@ -4,7 +4,7 @@
 // NB: Install node.js, run this server in node, then point browser to localhost:8080
 // Also need to install jsdom (npm install jsdom)
 //
-
+//
 // Thingspeak key: YE9XA4NZGQUV1H2R
 
 
@@ -81,7 +81,7 @@ function boot() {
     res.sendFile(__dirname + '/public/gameclient.html');
   });
   server.get('/log', function(req, res) {
-    res.sendFile(__dirname + '/mazeGames.log');
+    res.sendFile(__dirname + '/logs/mazeGames.log');
   });
   server.use(logger);
   server.use(express.static(__dirname + "/public"));
@@ -103,7 +103,7 @@ function boot() {
     this.theFile.end();
   }
 
-  logger = new Logger("mazeGames.log");
+  logger = new Logger("logs/mazeGames.log");
 
   send404 = function(res, msg) {
     res.writeHead(404);

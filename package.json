@@ -19,7 +19,7 @@
   "homepage": "https://github.com/cbogart/mazegame#readme",
   "dependencies": {
     "express": "^4.13.3",
-    "jsdom": "^7.0.2",
+    "jsdom": "^11.0.0",
     "socket.io": "^1.3.7",
     "thingspeakclient": "^0.4.0"
   },
